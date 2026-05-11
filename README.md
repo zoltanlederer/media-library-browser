@@ -22,3 +22,28 @@ A Streamlit-based media browser for exploring a personal movie and TV show libra
 ## Installation & Usage
 
 Coming soon.
+
+## Project Structure
+
+```
+media-library-browser/
+│
+├── app.py                  # entry point — Streamlit runs this
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── data/
+│   └── .gitkeep            # keeps the folder in Git without exposing the database
+│
+├── db/
+│   └── database.py         # all database queries live here
+│
+├── ui/
+│   ├── browse.py           # the main browsing page
+│   ├── filters.py          # the filter sidebar
+│   └── collections.py      # collections page
+│
+└── utils/
+    └── helpers.py          # small reusable functions
+```
