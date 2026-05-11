@@ -21,7 +21,7 @@ Thumbs.db
 .idea/
 
 # Database
-data/
+data/*.db
 
 # Data files
 *.csv
