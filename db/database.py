@@ -71,3 +71,26 @@ def get_all_media(filters):
     conn.close()
 
     return rows
+
+
+def get_genres():
+    """Returns a list of all unique genres (for populating the filter dropdown)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # only fetch the genres column — no need to load all columns
+    rows = cursor.execute('SELECT genres FROM media').fetchall()
+
+    genres = set()  # a set automatically ignores duplicates
+
+    for row in rows:
+        row_dict = dict(row)  # convert sqlite3.Row to a regular dictionary
+        if row_dict['genres']:  # skip rows where genres is None
+            for genre in row_dict['genres'].split(', '):  # split "Comedy, Romance" into ["Comedy", "Romance"]
+                genres.add(genre)  # add each individual genre to the set
+
+    conn.close()
+
+    return sorted(genres)  # convert set to a sorted list for the dropdown
+
+
