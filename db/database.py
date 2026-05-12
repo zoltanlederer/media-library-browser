@@ -73,24 +73,30 @@ def get_all_media(filters):
     return rows
 
 
-def get_genres():
-    """Returns a list of all unique genres (for populating the filter dropdown)"""
+def get_unique_values(column):
+    """Returns a sorted list of unique values from a comma-separated column"""
     conn = get_connection()
     cursor = conn.cursor()
 
-    # only fetch the genres column — no need to load all columns
-    rows = cursor.execute('SELECT genres FROM media').fetchall()
+    # only fetch the requested column — no need to load all columns
+    # use quoted column for SQL, but strip quotes for dictionary lookup
+    sql_column = f'"{column}"'  # always wrap in double quotes for SQL safety
+    rows = cursor.execute(f'SELECT {sql_column} FROM media').fetchall()
 
-    genres = set()  # a set automatically ignores duplicates
+    values = set()  # a set automatically ignores duplicates
 
     for row in rows:
         row_dict = dict(row)  # convert sqlite3.Row to a regular dictionary
-        if row_dict['genres']:  # skip rows where genres is None
-            for genre in row_dict['genres'].split(', '):  # split "Comedy, Romance" into ["Comedy", "Romance"]
-                genres.add(genre)  # add each individual genre to the set
+        if row_dict[column]:  # skip rows where values is None
+            for value in row_dict[column].split(', '):  # split "Comedy, Romance" into ["Comedy", "Romance"]
+                values.add(value)  # add each individual value to the set
 
     conn.close()
 
-    return sorted(genres)  # convert set to a sorted list for the dropdown
+    return sorted(values)  # convert set to a sorted list
 
+
+# print(get_unique_values('genres'))
+# print(get_unique_values('cast'))
+# print(get_unique_values('directors'))
 
