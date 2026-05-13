@@ -108,6 +108,24 @@ def get_collection_names():
     conn.close()
     return sorted(names)
 
+
+def save_collection(name, imdb_ids):
+    """Saves a list of imdb_ids under a collection name. Returns True on success, False on failure."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        for imdb_id in imdb_ids:
+            cursor.execute('INSERT OR IGNORE INTO collections (name, imdb_id) VALUES (?, ?)', (name, imdb_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f'Error saving collection: {e}')
+        return False
+    finally:
+        conn.close()
+
+# save_collection('Favourites', ['tt12042730'])
+
 # print(get_collection_names())
 
 # print(get_unique_values('genres'))
