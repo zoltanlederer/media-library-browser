@@ -1,4 +1,4 @@
-""" All database queries live here """
+"""All database queries live here"""
 
 import sqlite3
 
@@ -102,7 +102,7 @@ def get_collection_names():
     conn = get_connection()
     cursor = conn.cursor()
     rows = cursor.execute('SELECT DISTINCT name FROM collections').fetchall()
-    names = list()
+    names = []
     for row in rows:
         names.append(row['name'])
     conn.close()
@@ -110,7 +110,7 @@ def get_collection_names():
 
 
 def save_collection(name, imdb_ids):
-    """Saves a list of imdb_ids under a collection name. Returns True on success, False on failure."""
+    """Creates a new collection or adds titles to an existing one. Returns True on success, False on failure."""
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -141,7 +141,7 @@ def delete_collection(name):
 
 
 def remove_from_collection(name, imdb_id):
-    """Removes one specific row matching both the collection name and the imdb_id"""
+    """Removes a single title from a collection. Returns True on success, False on failure."""
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -153,13 +153,3 @@ def remove_from_collection(name, imdb_id):
         return False
     finally:
         conn.close()
-    
-
-# save_collection('Favourites', ['tt12042730'])
-
-# print(get_collection_names())
-
-# print(get_unique_values('genres'))
-# print(get_unique_values('cast'))
-# print(get_unique_values('directors'))
-
