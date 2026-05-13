@@ -96,6 +96,19 @@ def get_unique_values(column):
     return sorted(values)  # convert set to a sorted list
 
 
+def get_collection_names():
+    """Returns all saved collection names"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    rows = cursor.execute('SELECT DISTINCT name FROM collections').fetchall()
+    names = list()
+    for row in rows:
+        names.append(row['name'])
+    conn.close()
+    return sorted(names)
+
+print(get_collection_names())
+
 # print(get_unique_values('genres'))
 # print(get_unique_values('cast'))
 # print(get_unique_values('directors'))
