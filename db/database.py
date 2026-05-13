@@ -124,6 +124,23 @@ def save_collection(name, imdb_ids):
     finally:
         conn.close()
 
+
+def delete_collection(name):
+    """Deletes all entries for a given collection name. Returns True on success, False on failure."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM collections WHERE name = ?', [name])
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f'Error deleting collection: {e}')
+        return False
+    finally:
+        conn.close()
+
+
+
 # save_collection('Favourites', ['tt12042730'])
 
 # print(get_collection_names())
