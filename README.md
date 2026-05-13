@@ -39,10 +39,9 @@ media-library-browser/
 ├── db/
 │   └── database.py         # all database queries live here
 │
-├── ui/
-│   ├── browse.py           # the main browsing page
-│   ├── filters.py          # the filter sidebar
-│   └── collections.py      # collections page
+├── pages/                  # Streamlit multipage folder
+│   ├── 1_browse.py         # Browse page
+│   └── 2_collections.py    # Collections page
 │
 └── utils/
     └── helpers.py          # small reusable functions
