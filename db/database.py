@@ -140,6 +140,20 @@ def delete_collection(name):
         conn.close()
 
 
+def remove_from_collection(name, imdb_id):
+    """Removes one specific row matching both the collection name and the imdb_id"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM collections WHERE name = ? AND imdb_id = ?', [name, imdb_id])
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f'Error deleting collection item: {e}')
+        return False
+    finally:
+        conn.close()
+    
 
 # save_collection('Favourites', ['tt12042730'])
 
