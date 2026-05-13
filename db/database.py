@@ -16,7 +16,8 @@ def create_collections_table(conn):
         CREATE TABLE IF NOT EXISTS collections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        imdb_id TEXT NOT NULL)
+        imdb_id TEXT NOT NULL,
+        UNIQUE(name, imdb_id))
     ''')
     conn.commit()
 
@@ -107,7 +108,7 @@ def get_collection_names():
     conn.close()
     return sorted(names)
 
-print(get_collection_names())
+# print(get_collection_names())
 
 # print(get_unique_values('genres'))
 # print(get_unique_values('cast'))
