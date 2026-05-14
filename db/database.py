@@ -45,6 +45,10 @@ def get_all_media(filters):
         conditions.append('"cast" LIKE ?')
         values.append(f'%{filters["cast"]}%')
 
+    if filters.get('directors'):
+        conditions.append('directors LIKE ?')
+        values.append(f'%{filters["directors"]}%')
+
     if filters.get('imdb_rating'):
         # >= means "at least this rating" — not an exact match
         conditions.append('imdb_rating >= ?')
