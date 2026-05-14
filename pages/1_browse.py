@@ -4,6 +4,10 @@ import streamlit as st
 from datetime import datetime
 from db.database import get_all_media, get_unique_values, save_collection, get_collection_names
 
+POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w300'
+
+st.title('Browse')
+
 current_year = datetime.now().year
 min_year_value=1931
 
@@ -31,7 +35,6 @@ year_range = st.sidebar.slider('Year', min_value=min_year_value, max_value=curre
 
 min_rating = st.sidebar.slider('Rating', min_value=0.0, max_value=10.0, step=0.1, value=0.0)
 
-
 if selected_genre == 'All':
     selected_genre = None
 if selected_cast == 'All':
@@ -50,3 +53,18 @@ filters = {
     }
 
 results = get_all_media(filters) 
+
+# Poster Grid
+st.write(f'{len(results)} titles found') # After fetching results, show how many titles were found
+cols = st.columns(6)
+
+for index, row in enumerate(results):
+    col = cols[index % 6] # cycle through columns 0,1,2,3,4,5,0,1,2...
+    with col:
+        if row['poster_path'] is None:
+            st.image('https://zoltanlederer.com/assets/poster_placeholder.png')
+        else:
+            st.image(POSTER_BASE_URL + row['poster_path'])
+
+        st.caption(row['title'])
+        st.caption(f"⭐ {row['imdb_rating'] or 'N/A'} · {int(row['year']) if row['year'] else 'N/A'}")
