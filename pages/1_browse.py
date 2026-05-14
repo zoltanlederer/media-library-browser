@@ -29,6 +29,24 @@ selected_director = st.sidebar.selectbox('Director', ['All'] + directors)
 
 year_range = st.sidebar.slider('Year', min_value=min_year_value, max_value=current_year, value=(min_year_value, current_year))
 
-rate_range = st.sidebar.slider('Rating', min_value=0.0, max_value=10.0, step=0.1, value=(0.0, 10.0))
+min_rating = st.sidebar.slider('Rating', min_value=0.0, max_value=10.0, step=0.1, value=0.0)
 
-# get_all_media({})
+
+if selected_genre == 'All':
+    selected_genre = None
+if selected_cast == 'All':
+    selected_cast = None
+if selected_director == 'All':
+    selected_director = None
+
+filters = {
+    'media_type': media_type,
+    'genres': selected_genre,
+    'cast': selected_cast,
+    'directors': selected_director,
+    'imdb_rating': min_rating,
+    'year_min': year_range[0],
+    'year_max': year_range[1]
+    }
+
+results = get_all_media(filters) 
