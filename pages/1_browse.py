@@ -1,49 +1,53 @@
-"""Browse page"""
+"""Browse page — displays a filterable, sortable grid of movie and TV show posters"""
 
 import streamlit as st
 from datetime import datetime
 from db.database import get_all_media, get_unique_values, save_collection, get_collection_names
 
-POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w300'
+# ── Constants ──────────────────────────────────────────────────────────────
+POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w300'  # TMDB base URL for poster images
+POSTER_PLACEHOLDER = 'https://zoltanlederer.com/assets/poster_placeholder.png'  # fallback image
+MIN_YEAR = 1931       # earliest year in the database
+RESULTS_PER_PAGE = 20 # number of posters to show per page
 
-st.title('Browse')
+# ── Page title ─────────────────────────────────────────────────────────────
+st.title('Media Library Browser')
+st.write('Browse your personal collection of movies and TV shows. Filter by genre, actor, year, or rating.')
 
+# ── Load filter options from the database ──────────────────────────────────
+# these are loaded once and used to populate the sidebar dropdowns
 current_year = datetime.now().year
-min_year_value=1931
+genres = get_unique_values('genres')
+cast = get_unique_values('cast')
+directors = get_unique_values('directors')
+
+# ── Sidebar filters ────────────────────────────────────────────────────────
+st.sidebar.title('Filters')
+
+# type filter — map friendly labels to database values
+type_options = {'All': None, 'Movie': 'movie', 'TV Show': 'tv_show'}
+media_type_label = st.sidebar.radio('Type', list(type_options.keys()))
+media_type = type_options[media_type_label]  # e.g. "TV Show" → "tv_show", "All" → None
+
+# sort order
 sort_options = {
     'Title A-Z': ('title', True),
     'Title Z-A': ('title', False),
     'Year (newest first)': ('year', False),
     'Year (oldest first)': ('year', True),
 }
+selected_sort = st.sidebar.selectbox('Sort by', sort_options)
 
-# load filter options from the database
-genres = get_unique_values('genres')
-cast = get_unique_values('cast')
-directors = get_unique_values('directors')
-
-# render sidebar filters
-st.sidebar.title('Filters')
-
-# map friendly UI labels to the actual values stored in the database
-type_options = {'All': None, 'Movie': 'movie', 'TV Show': 'tv_show'}
-
-# render the radio button in the sidebar — the user sees "All", "Movie", "TV Show"
-media_type_label = st.sidebar.radio('Type', list(type_options.keys()))
-
-# look up the actual database value for the selected label
-# e.g. "TV Show" → "tv_show", "All" → None
-media_type = type_options[media_type_label]
-
-selected_sort = st.sidebar.selectbox("Sorted by", sort_options) # Sorting
-selected_genre = st.sidebar.selectbox('Genres', ['All'] + genres)
+# dropdown filters
+selected_genre = st.sidebar.selectbox('Genre', ['All'] + genres)
 selected_cast = st.sidebar.selectbox('Actor/Actress', ['All'] + cast)
 selected_director = st.sidebar.selectbox('Director', ['All'] + directors)
 
-year_range = st.sidebar.slider('Year', min_value=min_year_value, max_value=current_year, value=(min_year_value, current_year))
+# range filters
+year_range = st.sidebar.slider('Year', min_value=MIN_YEAR, max_value=current_year, value=(MIN_YEAR, current_year))
+min_rating = st.sidebar.slider('Minimum rating', min_value=0.0, max_value=10.0, step=0.1, value=0.0)
 
-min_rating = st.sidebar.slider('Rating', min_value=0.0, max_value=10.0, step=0.1, value=0.0)
-
+# convert 'All' selections to None so get_all_media() ignores them
 if selected_genre == 'All':
     selected_genre = None
 if selected_cast == 'All':
@@ -51,6 +55,7 @@ if selected_cast == 'All':
 if selected_director == 'All':
     selected_director = None
 
+# ── Fetch results ──────────────────────────────────────────────────────────
 filters = {
     'media_type': media_type,
     'genres': selected_genre,
@@ -59,25 +64,24 @@ filters = {
     'imdb_rating': min_rating,
     'year_min': year_range[0],
     'year_max': year_range[1]
-    }
+}
 
 results = get_all_media(filters)
 
+# sort results in Python after fetching
 sort_key, ascending = sort_options[selected_sort]
 results = sorted(results, key=lambda row: row[sort_key] or '', reverse=not ascending)
 
-
-# Poster Grid
-st.write(f'{len(results)} titles found') # After fetching results, show how many titles were found
+# ── Poster grid ────────────────────────────────────────────────────────────
+st.write(f'{len(results)} titles found')
 cols = st.columns(6)
 
 for index, row in enumerate(results):
-    col = cols[index % 6] # cycle through columns 0,1,2,3,4,5,0,1,2...
+    col = cols[index % 6]  # cycle through columns 0,1,2,3,4,5,0,1,2...
     with col:
         if row['poster_path'] is None:
-            st.image('https://zoltanlederer.com/assets/poster_placeholder.png')
+            st.image(POSTER_PLACEHOLDER)
         else:
             st.image(POSTER_BASE_URL + row['poster_path'])
-
         st.caption(row['title'])
         st.caption(f"⭐ {row['imdb_rating'] or 'N/A'} · {int(row['year']) if row['year'] else 'N/A'}")
