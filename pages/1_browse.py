@@ -10,6 +10,12 @@ st.title('Browse')
 
 current_year = datetime.now().year
 min_year_value=1931
+sort_options = {
+    'Title A-Z': ('title', True),
+    'Title Z-A': ('title', False),
+    'Year (newest first)': ('year', False),
+    'Year (oldest first)': ('year', True),
+}
 
 # load filter options from the database
 genres = get_unique_values('genres')
@@ -18,6 +24,7 @@ directors = get_unique_values('directors')
 
 # render sidebar filters
 st.sidebar.title('Filters')
+
 # map friendly UI labels to the actual values stored in the database
 type_options = {'All': None, 'Movie': 'movie', 'TV Show': 'tv_show'}
 
@@ -27,6 +34,8 @@ media_type_label = st.sidebar.radio('Type', list(type_options.keys()))
 # look up the actual database value for the selected label
 # e.g. "TV Show" → "tv_show", "All" → None
 media_type = type_options[media_type_label]
+
+selected_sort = st.sidebar.selectbox("Sorted by", sort_options) # Sorting
 selected_genre = st.sidebar.selectbox('Genres', ['All'] + genres)
 selected_cast = st.sidebar.selectbox('Actor/Actress', ['All'] + cast)
 selected_director = st.sidebar.selectbox('Director', ['All'] + directors)
@@ -52,7 +61,11 @@ filters = {
     'year_max': year_range[1]
     }
 
-results = get_all_media(filters) 
+results = get_all_media(filters)
+
+sort_key, ascending = sort_options[selected_sort]
+results = sorted(results, key=lambda row: row[sort_key] or '', reverse=not ascending)
+
 
 # Poster Grid
 st.write(f'{len(results)} titles found') # After fetching results, show how many titles were found
