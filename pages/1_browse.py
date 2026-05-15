@@ -8,11 +8,15 @@ from db.database import get_all_media, get_unique_values, save_collection, get_c
 POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w300'  # TMDB base URL for poster images
 POSTER_PLACEHOLDER = 'https://zoltanlederer.com/assets/poster_placeholder.png'  # fallback image
 MIN_YEAR = 1931       # earliest year in the database
-RESULTS_PER_PAGE = 20 # number of posters to show per page
+RESULTS_PER_PAGE = 24 # number of posters to show per page
 
 # ── Page title ─────────────────────────────────────────────────────────────
 st.title('Media Library Browser')
 st.write('Browse your personal collection of movies and TV shows. Filter by genre, actor, year, or rating.')
+
+# initialise page number — only sets it to 0 if it doesn't exist yet
+if 'page' not in st.session_state:
+    st.session_state.page = 0
 
 # ── Load filter options from the database ──────────────────────────────────
 # these are loaded once and used to populate the sidebar dropdowns
@@ -66,17 +70,23 @@ filters = {
     'year_max': year_range[1]
 }
 
-results = get_all_media(filters)
+results = get_all_media(filters) # full list
 
-# sort results in Python after fetching
+# sort full results after fetching
 sort_key, ascending = sort_options[selected_sort]
 results = sorted(results, key=lambda row: row[sort_key] or '', reverse=not ascending)
+
+# slice it for the current page
+start = st.session_state.page * RESULTS_PER_PAGE
+end = start + RESULTS_PER_PAGE
+page_results = results[start:end]
+total_pages = len(results) // RESULTS_PER_PAGE
 
 # ── Poster grid ────────────────────────────────────────────────────────────
 st.write(f'{len(results)} titles found')
 cols = st.columns(6)
 
-for index, row in enumerate(results):
+for index, row in enumerate(page_results):
     col = cols[index % 6]  # cycle through columns 0,1,2,3,4,5,0,1,2...
     with col:
         if row['poster_path'] is None:
@@ -85,3 +95,22 @@ for index, row in enumerate(results):
             st.image(POSTER_BASE_URL + row['poster_path'])
         st.caption(row['title'])
         st.caption(f"⭐ {row['imdb_rating'] or 'N/A'} · {int(row['year']) if row['year'] else 'N/A'}")
+
+# ── Pagination ─────────────────────────────────────────────────────────────
+col_prev, col_info, col_next = st.columns([2, 5, 1])
+
+with col_prev:
+    if st.button('← Previous', disabled=st.session_state.page == 0):
+        st.session_state.page -= 1
+
+with col_info:
+    st.markdown(
+        f"<p style='text-align: center; margin-top: 6px;'>"
+        f"Page {st.session_state.page + 1} of {total_pages + 1}"
+        f"</p>",
+        unsafe_allow_html=True
+    )
+
+with col_next:
+    if st.button('Next →', disabled=st.session_state.page >= total_pages):
+        st.session_state.page += 1
