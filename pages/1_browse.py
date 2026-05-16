@@ -70,6 +70,14 @@ filters = {
     'year_max': year_range[1]
 }
 
+# reset to page 0 when filters change
+current_filters = (media_type, selected_genre, selected_cast, selected_director, min_rating, year_range, selected_sort)
+if 'last_filters' not in st.session_state:
+    st.session_state.last_filters = current_filters
+if current_filters != st.session_state.last_filters:
+    st.session_state.page = 0
+    st.session_state.last_filters = current_filters
+
 results = get_all_media(filters) # full list
 
 # sort full results after fetching
